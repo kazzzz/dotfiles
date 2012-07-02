@@ -2,6 +2,7 @@
 ;; ロードパスへの追加
 ;; ただし、add-to-load-path関数を作成した場合は不要
 ;; (add-to-list 'load-path "~/.emacs.d/elisp")
+;; test
 
 ;; load-pathを追加する関数を定義
 (defun add-to-load-path (&rest paths)
