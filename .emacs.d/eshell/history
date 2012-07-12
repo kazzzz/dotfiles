@@ -2,3 +2,10 @@ ls
 env
 echo $JAVA_HOME
 vi
+ls
+ls
+ls
+clear
+ls
+groovy regexp.groovy abc
+exit

@@ -45,3 +45,27 @@
           '(lambda ()
              (require 'groovy-electric)
              (groovy-electric-mode)))
+
+;; yaml-mode
+(require 'yaml-mode)
+(add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
+
+;; バックアップファイルの設定
+(add-to-list 'backup-directory-alist
+	     (cons "." "~/.emacs.d/backups/"))
+(setq auto-save-file-name-transforms
+     `((".*" ,(expand-file-name "~/.emacs.d/backups/") t)))
+
+;; if shebang exists add +x
+(add-hook 'after-save-hook
+	  'executable-make-buffer-file-executable-if-script-p)
+
+;; elisp関数や変数の情報をエコーエリアに表示する
+(defun elisp-mode-hooks()
+  "lisp-mode-hooks"
+  (when (require 'eldoc nil t)
+    (setq eldoc-idle-delay 0.2)
+    (setq eldoc-echo-area-use-multiline-p t)
+    (turn-on-eldoc-mode)))
+(add-hook 'emacs-lisp-mode-hook 'elisp-mode-hooks)
+
