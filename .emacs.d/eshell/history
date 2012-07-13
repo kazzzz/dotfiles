@@ -1,4 +1,0 @@
-ls
-env
-echo $JAVA_HOME
-vi
