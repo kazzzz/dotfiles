@@ -8,13 +8,30 @@
   (setq locale-coding-system 'utf-8-hfs))
 
 ;; Windowsの場合のファイル名の設定
-(when (eq system-type 'w32)
+(when (eq system-type 'windows-nt)
   (set-file-name-coding-system 'cp932)
-  (setq locale-coding-system 'cp932))
+  (setq locale-coding-system 'cp932)
+  (set-face-attribute 'default nil
+		      :family "ＭＳ ゴシック"
+		      :height 90)
+  (set-fontset-font "fontset-default"
+		    'japanese-jisx0208
+		    '("ＭＳ ゴシック" . "jisx0208-sjis"))
+)
+
 
 ;; 表示関連
 (column-number-mode t)
 (global-linum-mode t)
+
+;; 起動時のウィンドウサイズ
+(setq initial-frame-alist
+      (append (list
+	       '(width . 140)
+	       '(height . 70)
+	       )
+	      initial-frame-alist))
+(setq default-frame-alist initial-frame-alist)
 
 ;; ロードパスへの追加
 ;; ただし、add-to-load-path関数を作成した場合は不要
@@ -34,6 +51,10 @@
 
 ;;; turn on syntax highlighting
 (global-font-lock-mode 1)
+
+
+
+
 
 ;;; use groovy-mode when file ends in .groovy or has #!/bin/groovy at start
 (autoload 'groovy-mode "groovy-mode" "Major mode for editing Groovy code." t)
