@@ -1,3 +1,4 @@
+(setq max-lisp-eval-depth 1500)
 ;; (put 'narrow-to-region 'disabled nil)
 (define-key global-map (kbd "C-c l") 'toggle-truncate-lines)
 
@@ -92,11 +93,11 @@
 (add-hook 'emacs-lisp-mode-hook 'elisp-mode-hooks)
 
 ;; auto-install の設定
-(when (require 'auto-install nil t)
-  (setq auto-install-directory "~/.emacs.d/elisp/")
-  (auto-install-update-emacswiki-package-name t)
+;;(when (require 'auto-install nil t)
+;;  (setq auto-install-directory "~/.emacs.d/elisp/")
+;;  (auto-install-update-emacswiki-package-name t)
   ;; (setq url-proxy-services '(("http" . "localhost:3128")))
-  (auto-install-compatibility-setup))
+;;  (auto-install-compatibility-setup))
 
 ;; redo+ の設定
 (when (require 'redo+ nil t)
