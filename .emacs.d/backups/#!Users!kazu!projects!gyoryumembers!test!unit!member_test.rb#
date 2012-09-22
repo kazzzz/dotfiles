@@ -1,0 +1,413 @@
+#coding: utf-8
+require 'test_helper'
+
+class MemberTest < ActiveSupport::TestCase
+  # Replace this with your real tests.
+  test "member.save" do
+    member = Member.new({
+                          :last_name => '山'*15,
+                          :first_name => '太'*15,
+                          :last_name_kana => 'や' * 15,
+                          :first_name_kana => 'た' * 15,
+                          :sex => '男性',
+                          :birth => '1989-09-12',
+                          :mail => 'yy@' + ('a' * 250)  + '.to',
+                          :mail_confirmation => 'yy@' + ('a' * 250)  + '.to',
+                          :postal_code => '2103210',
+                          :address => ('東' * 100) + '1' * 156,
+                          :message => 'あ' * 3000,
+                          :kind => '正会員（個人）',
+                          :tel => '0' * 11})
+    assert member.save, 'Failed to save'
+  end
+
+  test "validate required failure by blank" do
+    member = Member.new({
+                          :last_name => '',
+                          :first_name => '',
+                          :last_name_kana => '',
+                          :first_name_kana => '',
+                          :sex => '',
+                          :mail => '',
+                          :mail_confirmation => '',
+                          :address => '',
+                          :kind => '',
+                          :tel => ''})
+    assert !member.save, 'not failed'
+    assert_equal member.errors.size, 10, 'Failed to validate count'
+    assert member.errors[:last_name].any?, 'Failed to last_name validate'
+    assert member.errors[:first_name].any?, 'Failed to first_name validate'
+    assert member.errors[:last_name_kana].any?, 'Failed to last_name_kana validate'
+    assert member.errors[:first_name_kana].any?, 'Failed to first_name_kana validate'
+    assert member.errors[:sex].any?, 'Failed to sex validate'
+    assert member.errors[:mail].any?, 'Failed to mail validate'
+    assert member.errors[:mail_confirmation].any?, 'Failed to mail_confirmation validate'
+    assert member.errors[:address].any?, 'Failed to address validate'
+    assert member.errors[:kind].any?, 'Failed to kind validate'
+    assert member.errors[:tel].any?, 'Failed to tel validate'
+  end
+
+  test "validate required failure by nil" do
+    member = Member.new({})
+    assert !member.save, 'not failed'
+    assert_equal member.errors.size, 10, 'Failed to validate count'
+    assert member.errors[:last_name].any?, 'Failed to last_name validate'
+    assert member.errors[:first_name].any?, 'Failed to first_name validate'
+    assert member.errors[:last_name_kana].any?, 'Failed to last_name_kana validate'
+    assert member.errors[:first_name_kana].any?, 'Failed to first_name_kana validate'
+    assert member.errors[:sex].any?, 'Failed to sex validate'
+    assert member.errors[:mail].any?, 'Failed to mail validate'
+    assert member.errors[:mail_confirmation].any?, 'Failed to mail_confirmation validate'
+    assert member.errors[:address].any?, 'Failed to address validate'
+    assert member.errors[:kind].any?, 'Failed to kind validate'
+    assert member.errors[:tel].any?, 'Failed to tel validate'
+  end
+
+  test "validate length failure" do
+    member = Member.new({
+                          :last_name => '山' * 16,
+                          :first_name => '太' * 16,
+                          :last_name_kana => 'や' * 16,
+                          :first_name_kana => 'た' * 16,
+                          :sex => '男性',
+                          :birth => '1989-09-12',
+                          :mail => 'yy@' + ('a' * 251)  + '.to',
+                          :mail_confirmation => 'yy@' + ('a' * 251)  + '.to',
+                          :postal_code => '1' * 8,
+                          :address => ('東' * 100) + '1' * 157,
+                          :message => 'あ' * 3001,
+                          :kind => '正会員（個人）a',
+                          :tel => '0' * 12
+                        })
+    assert !member.save, 'not failed'
+    assert_equal member.errors.size, 10, 'Failed to validate count'
+    assert member.errors[:kind].any?, 'Failed to last_name validate'
+    assert member.errors[:last_name].any?, 'Failed to last_name validate'
+    assert member.errors[:first_name].any?, 'Failed to first_name validate'
+    assert member.errors[:last_name_kana].any?, 'Failed to last_name_kana validate'
+    assert member.errors[:first_name_kana].any?, 'Failed to first_name_kana validate'
+    assert member.errors[:mail].any?, 'Failed to mail validate'
+    assert member.errors[:postal_code].any?, 'Failed to postal_code validate'
+    assert member.errors[:address].any?, 'Failed to address validate'
+    assert member.errors[:message].any?, 'Failed to message validate'
+    assert member.errors[:tel].any?, 'Failed to tel validate'
+  end
+
+  test "validate tel format" do
+    params = {
+      :last_name => '山'*15,
+      :first_name => '太'*15,
+      :last_name_kana => 'や' * 15,
+      :first_name_kana => 'た' * 15,
+      :sex => '男性',
+      :birth => '1989-09-12',
+      :mail => 'yy@' + ('a' * 250)  + '.to',
+      :mail_confirmation => 'yy@' + ('a' * 250)  + '.to',
+      :postal_code => '2103210',
+      :address => ('東' * 100) + '1' * 156,
+      :message => 'あ' * 3000,
+      :kind => '正会員（個人）',
+      :tel => '090-0000-2222'
+    }
+    member = Member.new(params)
+    assert member.save, 'Failed to save'
+
+    params[:tel] = '0123456789'
+    assert member.update_attributes(params), 'Failed to save'
+
+    params[:tel] = '01234567890'
+    assert member.update_attributes(params), 'Failed to save'
+
+    params[:tel] = '03-1111-3333'
+    assert member.update_attributes(params), 'Failed to save'
+
+    params[:tel] = '043-111-2222'
+    assert member.update_attributes(params), 'Failed to save'
+
+    params[:tel] = '0120-111-222'
+    assert member.update_attributes(params), 'Failed to save'
+
+    params[:tel] = '04311122a22'
+    assert !member.update_attributes(params), 'not failed'
+#    assert_equal member.errors[:tel][0], '04311122a22は正しい形式ではありません'
+
+    params[:tel] = '043-111-22a22'
+    assert !member.update_attributes(params), 'not failed'
+#    assert_equal member.errors[:tel][0], '043-111-22a22は正しい形式ではありません'
+
+    params[:tel] = '04311122５22'
+    assert !member.update_attributes(params), 'not failed'
+#    assert_equal member.errors[:tel][0], '04311122５22は正しい形式ではありません'
+  end
+
+  
+  test "validate kana format" do
+    params = {
+      :last_name => '山'*15,
+      :first_name => '太'*15,
+      :last_name_kana => 'a' * 15,
+      :first_name_kana => 'a' * 15,
+      :sex => '男性',
+      :birth => '1989-09-12',
+      :mail => 'yy@' + ('a' * 250)  + '.to',
+      :mail_confirmation => 'yy@' + ('a' * 250)  + '.to',
+      :postal_code => '2103210',
+      :address => ('東' * 100) + '1' * 156,
+                          :message => 'あ' * 3000,
+      :kind => '正会員（個人）',
+      :tel => '090-0000-2222'
+    }
+
+    member = Member.new(params)
+    assert !member.save, 'not failed'
+    assert_equal member.errors.size, 2, 'Failed to validate count'
+    assert member.errors[:last_name_kana].any?, 'Failed to last_name_kana validate'
+    assert member.errors[:first_name_kana].any?, 'Failed to first_name_kana validate'
+
+    params[:last_name_kana] = '1'
+    params[:first_name_kana] = '1'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 2, 'Failed to validate count'
+    assert member.errors[:last_name_kana].any?, 'Failed to last_name_kana validate'
+    assert member.errors[:first_name_kana].any?, 'Failed to first_name_kana validate'
+
+    params[:last_name_kana] = 'ア'
+    params[:first_name_kana] = 'ア'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 2, 'Failed to validate count'
+    assert member.errors[:last_name_kana].any?, 'Failed to last_name_kana validate'
+    assert member.errors[:first_name_kana].any?, 'Failed to first_name_kana validate'
+
+    params[:last_name_kana] = 'ン'
+    params[:first_name_kana] = 'ン'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 2, 'Failed to validate count'
+    assert member.errors[:last_name_kana].any?, 'Failed to last_name_kana validate'
+    assert member.errors[:first_name_kana].any?, 'Failed to first_name_kana validate'
+
+    params[:last_name_kana] = 'ｱ'
+    params[:first_name_kana] = 'ｱ'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 2, 'Failed to validate count'
+    assert member.errors[:last_name_kana].any?, 'Failed to last_name_kana validate'
+    assert member.errors[:first_name_kana].any?, 'Failed to first_name_kana validate'
+
+    params[:last_name_kana] = 'ﾝ'
+    params[:first_name_kana] = 'ﾝ'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 2, 'Failed to validate count'
+    assert member.errors[:last_name_kana].any?, 'Failed to last_name_kana validate'
+    assert member.errors[:first_name_kana].any?, 'Failed to first_name_kana validate'
+  end
+
+  test "validate postal_code format" do
+    params = {
+      :last_name => '山'*15,
+      :first_name => '太'*15,
+      :last_name_kana => 'い' * 15,
+      :first_name_kana => 'あ' * 15,
+      :sex => '男性',
+      :birth => '1989-09-12',
+      :mail => 'yy@' + ('a' * 250)  + '.to',
+      :mail_confirmation => 'yy@' + ('a' * 250)  + '.to',
+      :postal_code => '210-3210',
+      :address => ('東' * 100) + '1' * 156,
+      :message => 'あ' * 3000,
+      :kind => '正会員（個人）',
+      :tel => '090-0000-2222'
+    }
+
+    member = Member.new(params)
+    assert member.save, 'Failed to save'
+
+    params[:postal_code] = '２７８９９９９'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 1, 'Failed to validate count'
+    assert member.errors[:postal_code].any?, 'Failed to postal_code validate'
+
+    params[:postal_code] = '2789876a'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 1, 'Failed to validate count'
+    assert member.errors[:postal_code].any?, 'Failed to postal_code validate'
+
+    params[:postal_code] = '278--98'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 1, 'Failed to validate count'
+    assert member.errors[:postal_code].any?, 'Failed to postal_code validate'
+  end
+  
+  test "validate mail format" do
+    params = {
+      :last_name => '山'*15,
+      :first_name => '太'*15,
+      :last_name_kana => 'い' * 15,
+      :first_name_kana => 'あ' * 15,
+      :sex => '男性',
+      :birth => '1989-09-12',
+      :mail => 'a@aawerawe.com',
+      :mail_confirmation => 'a@aawerawe.com',
+      :postal_code => '210-3210',
+      :address => ('東' * 100) + '1' * 156,
+      :message => 'あ' * 3000,
+      :kind => '正会員（個人）',
+      :tel => '090-0000-2222'
+    }
+
+    member = Member.new(params)
+    assert member.save, 'Failed to save'
+
+    params[:mail_confirmation] = nil
+
+    l = lambda {|mail|
+      params[:mail] = mail
+      assert member.update_attributes(params), 'Failed to save:' << mail
+    }
+
+    l.call('kazz.waer@awer.aer.jp')
+    l.call('aaa@aa.1.wera')
+    l.call('a-_...aa@aa.1.wera')
+
+
+    f = lambda {|mail|
+      params[:mail] = mail
+      assert !member.update_attributes(params), 'not failed:' << mail
+      assert_equal member.errors.size, 1, 'Failed to validate count'
+      assert member.errors[:mail].any?, 'Failed to mail validate'
+    }
+
+    f.call('awawer.com')
+    f.call('aa@@wae.we.jp')
+    f.call('aあaa@wera.aer.com')
+    f.call('aaa@wera')
+    f.call('aaa@we..ra')
+    f.call('aaa@werあa')
+    f.call('aaa@aあa.aaあaa.wera')
+    f.call('aaa@aa.rr1.we1ra')
+    f.call('aaa@aa.rr1.')
+    f.call('aaa@aa.rr1.b-')
+    f.call('aaa@aa.rr1.a_')
+    f.call('aaa@a a.com')
+    f.call('a aa@aa.rr1.a_')
+#    f.call('aaa@aer.com')
+  end
+
+  test "validate agreement" do
+    params = {
+      :last_name => '山'*15,
+      :first_name => '太'*15,
+      :last_name_kana => 'や' * 15,
+      :first_name_kana => 'た' * 15,
+      :sex => '男性',
+      :birth => '1989-09-12',
+      :mail => 'yy@' + ('a' * 250)  + '.to',
+      :mail_confirmation => 'yy@' + ('a' * 250)  + '.to',
+      :postal_code => '2103210',
+      :address => ('東' * 100) + '1' * 156,
+      :message => 'あ' * 3000,
+      :kind => '正会員（個人）',
+      :tel => '0' * 11,
+      :agreement => '1'
+    }
+
+    member = Member.new(params)
+    assert member.save, 'Failed to save'
+
+    params[:agreement] = '0'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 1, 'Failed validate conut'
+
+    params[:kind] = '準会員（個人）'
+    params[:agreement] = '0'
+    assert member.update_attributes(params), 'Failed to save'
+  end
+
+  test "validate sex correctness" do
+    params = {
+      :last_name => '山'*15,
+      :first_name => '太'*15,
+      :last_name_kana => 'や' * 15,
+      :first_name_kana => 'た' * 15,
+      :sex => 'おと',
+      :birth => '1989-09-12',
+      :mail => 'yy@' + ('a' * 250)  + '.to',
+      :mail_confirmation => 'yy@' + ('a' * 250)  + '.to',
+      :postal_code => '2103210',
+      :address => ('東' * 100) + '1' * 156,
+      :message => 'あ' * 3000,
+      :kind => '正会員（個人）',
+      :tel => '0' * 11,
+      :agreement => '1'
+    }
+
+    member = Member.new(params)
+    
+    assert !member.save, 'not Failed'
+    assert_equal member.errors.size, 1, 'Failed to validate count'
+
+    params[:sex] = '男性だ'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 1, 'Failed to validate count'
+
+    params[:sex] = '男'
+    assert !member.update_attributes(params), 'not failed'
+    assert_equal member.errors.size, 1, 'Failed to validate count'
+  end
+
+  test 'validte kind correctness' do
+    params = {
+      :last_name => '山'*15,
+      :first_name => '太'*15,
+      :last_name_kana => 'や' * 15,
+      :first_name_kana => 'た' * 15,
+      :sex => '女性',
+      :birth => '1989-09-12',
+      :mail => 'yy@' + ('a' * 250)  + '.to',
+      :mail_confirmation => 'yy@' + ('a' * 250)  + '.to',
+      :postal_code => '2103210',
+      :address => ('東' * 100) + '1' * 156,
+      :message => 'あ' * 3000,
+      :kind => '正会員',
+      :tel => '0' * 11,
+      :agreement => '1'
+    }
+    
+    member = Member.new(params)
+    assert !member.save, 'not failed'
+    assert_equal member.errors.size , 1, 'Failed to validate'
+  end
+
+  test 'mail confirmation validation' do
+    params = {
+      :last_name => '山'*15,
+      :first_name => '太'*15,
+      :last_name_kana => 'や' * 15,
+      :first_name_kana => 'た' * 15,
+      :sex => '女性',
+      :birth => '1989-09-12',
+      :mail => 'yy@' + ('a' * 250)  + '.to',
+      :mail_confirmation => 'aaa',
+      :postal_code => '2103210',
+      :address => ('東' * 100) + '1' * 156,
+      :message => 'あ' * 3000,
+      :kind => '正会員（個人）',
+      :tel => '0' * 11,
+      :agreement => '1'
+    }
+
+    member = Member.new(params)
+    assert !member.save, 'Not failed'
+    assert_equal member.errors.size, 1, 'Failed vlidate count'
+
+    params[:mail_confirmation] = params[:mail]
+    assert member.update_attributes(params), 'Failed to save'
+
+    
+    
+    params[:mail_confirmation] = nil
+    assert member.update_attributes(params), 'Failed to update'
+
+    member = Member.new(params)
+    assert !member.save, 'Not Failed'
+    assert_equal member.errors.size, 1, 'Failed to validate error count'
+  end
+end

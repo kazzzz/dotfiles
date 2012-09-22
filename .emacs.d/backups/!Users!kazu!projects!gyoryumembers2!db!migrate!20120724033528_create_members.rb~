@@ -1,0 +1,24 @@
+class CreateMembers < ActiveRecord::Migration
+  def self.up
+    create_table :members do |t|
+      t.string :last_name
+      t.string :fisrt_name
+      t.string :last_name
+      t.string :last_name_kana
+      t.string :first_name_kana
+      t.string :sex
+      t.date :birth
+      t.string :mail
+      t.string :postal_code
+      t.string :address
+      t.string :message
+      t.string :kind
+
+      t.timestamps
+    end
+  end
+
+  def self.down
+    drop_table :members
+  end
+end

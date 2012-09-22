@@ -1,0 +1,14 @@
+#!/usr/local/bin/ruby -Ke
+
+require 'erb'
+require 'cgi'
+
+@cgi = CGI.new
+template = ERB.new File.read("foo.text")
+
+@name = "jinnai"
+@kind = "student"
+
+header = {'type' => 'text/html', 'status' => 'OK' }
+cgi.out(header){template.result(binding)}
+

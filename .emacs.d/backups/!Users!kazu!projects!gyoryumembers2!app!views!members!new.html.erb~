@@ -1,0 +1,59 @@
+<h1>New member</h1>
+
+<% form_for(@member) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :last_name %><br />
+    <%= f.text_field :last_name %>
+  </p>
+  <p>
+    <%= f.label :first_name %><br />
+    <%= f.text_field :first_name %>
+  </p>
+  <p>
+    <%= f.label :last_name %><br />
+    <%= f.text_field :last_name %>
+  </p>
+  <p>
+    <%= f.label :last_name_kana %><br />
+    <%= f.text_field :last_name_kana %>
+  </p>
+  <p>
+    <%= f.label :first_name_kana %><br />
+    <%= f.text_field :first_name_kana %>
+  </p>
+  <p>
+    <%= f.label :sex %><br />
+    <%= f.text_field :sex %>
+  </p>
+  <p>
+    <%= f.label :birth %><br />
+    <%= f.date_select :birth %>
+  </p>
+  <p>
+    <%= f.label :mail %><br />
+    <%= f.text_field :mail %>
+  </p>
+  <p>
+    <%= f.label :postal_code %><br />
+    <%= f.text_field :postal_code %>
+  </p>
+  <p>
+    <%= f.label :address %><br />
+    <%= f.text_field :address %>
+  </p>
+  <p>
+    <%= f.label :message %><br />
+    <%= f.text_field :message %>
+  </p>
+  <p>
+    <%= f.label :kind %><br />
+    <%= f.text_field :kind %>
+  </p>
+  <p>
+    <%= f.submit "Create" %>
+  </p>
+<% end %>
+
+<%= link_to 'Back', members_path %>

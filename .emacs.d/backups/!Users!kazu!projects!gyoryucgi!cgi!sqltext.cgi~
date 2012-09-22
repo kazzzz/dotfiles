@@ -1,0 +1,6 @@
+require 'mysql'
+require 'kconv'
+
+my = Mysql::new("mysql430.db.sakura.ne.jp", "september-23", "e5bu9wuvb2_db")
+my.query("set character set utf8")
+my.query("use september-23_gyoryu")

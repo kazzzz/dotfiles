@@ -1,0 +1,167 @@
+#!/usr/local/bin/ruby -Ku
+# -*- coding: utf-8 -*-
+
+require 'erb'
+require 'cgi'
+require 'mysql'
+require 'time'
+require 'kconv'
+
+
+CHECKED = 'checked="checked"'
+SELECTED = 'selected="selected"'
+KINDS = %w(正会員（個人） 正会員（学生） 正会員（団体） 準会員（個人） 会員（団体） 賛助会員)
+SEXES = %w(男性 女性)
+MONTHS = %w(1 2 3 4 5 6 7 8 9 10 11 12)
+errors = {}
+
+class String
+  def strip_zenkaku!
+    s = "　\s\v"
+    replace(self =~ /^[#{s}]*([^#{s}]*)[#{s}]*$/ ? $1 : self)
+  end
+end
+
+def blank?(arg)
+  arg == nil || arg.empty?
+end
+
+
+
+
+
+@cgi = CGI.new
+
+
+@kind = @cgi['kind']
+@kind_checked = {}
+@kind_checked[@kind] = CHECKED
+
+@last_name = @cgi['last_name']
+@last_name.strip_zenkaku! if @last_name != nil
+
+@first_name = @cgi['first_name']
+@first_name.strip_zenkaku! if @first_name != nil
+
+@last_name_kana = @cgi['last_name_kana']
+@last_name_kana.strip_zenkaku! if @last_name_kana != nil
+
+@first_name_kana = @cgi['first_name_kana']
+@first_name_kana.strip_zenkaku! if @first_name_kana != nil
+
+@sex = @cgi['sex']
+@sex_checked = {}
+@sex_checked[@sex] = CHECKED
+
+@birth_year = @cgi['birth_year']
+
+now_year = Time.new.year
+year_selected = {}
+
+(blank? @birth_year) ? (year_selected[now_year - 30] = SELECTED) : (year_selected[@birth_year.to_i] = SELECTED)
+@out_birth_year = ""
+((now_year - 130)..(now_year)).each do |v|
+  @out_birth_year += "<option value=\"#{v}\" #{year_selected[v]} > #{v}</option>"
+end
+
+@birth_month = @cgi['birth_month']
+month_selected = {}
+(blank? @birth_month) ? (month_selected['1月'] = SELECTED) : (month_selected[@birth_month] = SELECTED)
+@out_birth_month = ""
+MONTHS.each do |v|
+  @out_birth_month += "<option value=\"#{v}\" #{month_selected[v]}>#{v}</option>"
+end
+
+@birth_day = @cgi['birth_day']
+day_selected = {}
+(blank? @birth_day) ? (day_selected[1] = SELECTED) : (day_selected[@birth_day.to_i] = SELECTED)
+@out_birth_day = ""
+(1..31).each do |v|
+  @out_birth_day += "<option value=\"#{v}\" #{day_selected[v]}>#{v}</option>"
+end
+
+@mail = @cgi['mail']
+@mail.strip_zenkaku! if @mail != nil
+
+@mail_confirmation = @cgi['mail_confirmation']
+@mail_confirmation.strip_zenkaku! if @mail_confirmation != nil
+
+@postal_code = @cgi['postal_code']
+@postal_code.strip_zenkaku! if @postal_code != nil
+
+@address = @cgi['address']
+@address.strip_zenkaku! if @address != nil
+
+@tel = @cgi['tel']
+@tel.strip_zenkaku! if @tel != nil
+
+@message = @cgi['message']
+@tel.strip_zenkaku! if @message != nil
+
+next_page="view/entry.rhtml"
+unless blank? @cgi['commit']
+
+  errors['kind'] = "[会員種別]を入力してください。"  if (blank? @kind)
+  errors['kind'] = "[会員種別]の値が不正です。" if errors['kind'].nil? && !KINDS.include?(@kind)
+  
+  errors['last_name'] = "[姓]を入力してください。"  if (blank? @last_name)  
+  errors['last_name'] = "[姓]を１５文字以内で入力してください。" if errors['last_name'].nil? && @last_name.chars.count > 15
+
+  errors['first_name'] = "[名]を入力してください。"  if (blank? @first_name)  
+  errors['first_name'] = "[名]を１５文字以内で入力してください。" if errors['first_name'].nil? && @first_name.chars.count > 15
+
+  errors['last_name_kana'] = "[姓（ふりがな）]を入力してください。"  if (blank? @last_name_kana)  
+  errors['last_name_kana'] = "[姓（ふりがな）]を１５文字以内で入力してください。" if errors['last_name_kana'].nil? && @last_name_kana.chars.count > 15
+  errors['last_name_kana'] = "[姓（ふりがな）]をひらがなで入力してください。" if errors['last_name_kana'].nil? && @last_name_kana !~ /^[あ-ん]+$/
+
+  errors['first_name_kana'] = "[名（ふりがな）]を入力してください。"  if (blank? @first_name_kana)  
+  errors['first_name_kana'] = "[名（ふりがな）]を１５文字以内で入力してください。" if errors['first_name_kana'].nil? && @first_name_kana.chars.count > 15
+  errors['first_name_kana'] = "[名（ふりがな）]をひらがなで入力してください。" if errors['first_name_kana'].nil? && @first_name_kana !~ /^[あ-ん]+$/
+
+  errors['sex'] = "[性別]を入力してください。"  if (blank? @sex) 
+  errors['sex'] = "[性別]の値が不正です。" if errors['sex'].nil? && !SEXES.include?(@sex)
+
+  errors['mail'] = "[メールアドレス]を入力してください。"  if (blank? @mail)  
+  errors['mail'] = "[メールアドレス]を256文字以内で入力してください。" if errors['mail'].nil? && @mail.chars.count > 256
+  errors['mail'] = "[メールアドレス]が正しい形式ではありません。" if errors['mail'].nil? && @mail !~ /^[a-zA-Z0-9._-]+@([-a-zA-Z0-9]+\.)+[a-zA-Z]+$/
+
+  errors['mail_confirmation'] = "[メールアドレス確認用再入力]を入力してください。"  if (blank? @mail_confirmation)  
+  errors['mail_confirmation'] = "[メールアドレス確認用再入力]を256文字以内で入力してください。" if errors['mail_confirmation'].nil? && @mail_confirmation.chars.count > 256
+
+  errors['postal_code'] = "[郵便番号]が正しい形式ではありません。半角数字と半角ハイフン「-」で入力してください。（例：111-0000, 1110000, 111）" if !blank?(@postal_code) && @postal_code !~ /(^\d{3}-?(\d{4})?$)/
+
+  errors['address'] = "[住所]を入力してください。"  if (blank? @address)  
+
+  errors['tel'] = "[電話番号]を入力してください。"  if (blank? @tel)  
+
+      
+  if @mail != @mail_confirmation
+    errors['mail_confirmation'] = "[メールアドレス]と[確認用メールアドレス]には同じメールアドレスを入力してください。"
+  end
+
+  if errors.empty?
+    # 時間をTime型に変換
+    birth = Time.parse("#{@birth_year}-#{@birth_month}-#{@birth_day}")
+    now = Time.new
+    now = Time.new
+
+    # DB登録
+    con = Mysql::new("mysql430.db.sakura.ne.jp", "september-23", "e5bu9wuvb2_db","september-23_gyoryu")
+    con.query("set character set utf8")
+
+    sql = "insert into members" +
+      "(kind, last_name, first_name, last_name_kana, first_name_kana," +
+      "sex, birth, mail, postal_code, address, tel, message, created_at, updated_at) values" +
+      "(?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
+    con.prepare(sql).execute(
+                             @kind, @last_name, @first_name, @last_name_kana, 
+                             @first_name_kana, @sex, birth, @mail, @postal_code,
+                             @address, @tel, @message, now, now)
+    next_page = "view/result.rhtml"
+  end
+end
+
+page = ERB.new File.read(next_page)
+header = {'type' => 'text/html', 'status' => 'OK' }
+@cgi.out(header){page.result(binding)}
+
