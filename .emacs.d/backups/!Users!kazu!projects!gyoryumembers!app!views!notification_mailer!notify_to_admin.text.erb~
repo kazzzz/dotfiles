@@ -1,4 +1,0 @@
-次のユーザが会員登録しました。
-
-氏名：<%= @member.last_name +' ' + @member.first_name %>
-メールアドレス：<%= @member.mail %>		      

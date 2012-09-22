@@ -1,5 +1,0 @@
-task hello {
-  doList {
-    println 'Hello World!'
-  }
-}
