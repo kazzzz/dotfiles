@@ -17,6 +17,14 @@
   (set-fontset-font "fontset-default"
 		    'japanese-jisx0208
 		    '("ＭＳ ゴシック" . "jisx0208-sjis"))
+;; 起動時のウィンドウサイズ
+  (setq initial-frame-alist
+	(append (list
+		 '(width . 140)
+		 '(height . 70)
+		 )
+		initial-frame-alist))
+  (setq default-frame-alist initial-frame-alist)
 )
 
 
@@ -24,14 +32,6 @@
 (column-number-mode t)
 (global-linum-mode t)
 
-;; 起動時のウィンドウサイズ
-(setq initial-frame-alist
-      (append (list
-	       '(width . 140)
-	       '(height . 70)
-	       )
-	      initial-frame-alist))
-(setq default-frame-alist initial-frame-alist)
 
 ;; ロードパスへの追加
 ;; ただし、add-to-load-path関数を作成した場合は不要
@@ -92,11 +92,11 @@
 (add-hook 'emacs-lisp-mode-hook 'elisp-mode-hooks)
 
 ;; auto-install の設定
-(when (require 'auto-install nil t)
-  (setq auto-install-directory "~/.emacs.d/elisp/")
-  (auto-install-update-emacswiki-package-name t)
-  ;; (setq url-proxy-services '(("http" . "localhost:3128")))
-  (auto-install-compatibility-setup))
+;;(when (require 'auto-install nil t)
+;;  (setq auto-install-directory "~/.emacs.d/elisp/")
+;;  (auto-install-update-emacswiki-package-name t)
+ ;; (setq url-proxy-services '(("http" . "localhost:3128")))
+;;  (auto-install-compatibility-setup))
 
 ;; redo+ の設定
 (when (require 'redo+ nil t)
